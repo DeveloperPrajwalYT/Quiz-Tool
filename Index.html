@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -23,10 +23,10 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-bottom: 7rem;
+            padding-bottom: 7rem; /* Ensure space for the fixed nav */
         }
 
-        /* --- HARDCODED CSS FOR RELIABILITY --- */
+        /* --- HARDCODED CSS FOR RELIABILITY (Guaranteed Layout) --- */
         
         .custom-grid-container {
             display: grid;
@@ -44,14 +44,14 @@
         .layout-20 { grid-template-columns: repeat(4, 1fr); }
         .layout-30 { grid-template-columns: repeat(5, 1fr); }
         
-        /* Responsive Overrides for Larger Screens */
+        /* Responsive Overrides for Larger Screens (sm: 640px) */
         @media (min-width: 640px) {
             .layout-12 { grid-template-columns: repeat(4, 1fr); }
             .layout-20 { grid-template-columns: repeat(5, 1fr); }
             .layout-30 { grid-template-columns: repeat(6, 1fr); }
         }
 
-        /* Number Box Styling - GUARANTEED VISIBILITY */
+        /* Number Box Styling - Touch Optimized */
         .custom-number-box {
             background-color: var(--box-bg); 
             color: white;
@@ -60,12 +60,19 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.8rem;
+            font-size: 1.5rem; /* Base size */
             font-weight: bold;
             aspect-ratio: 1 / 1;
             cursor: pointer;
             transition: background-color 0.2s;
-            user-select: none; /* Prevent text selection on tap */
+            user-select: none;
+        }
+        
+        /* Scale up number text for larger screens (PC/Smart Board) */
+        @media (min-width: 768px) {
+             .custom-number-box {
+                font-size: 2.2rem;
+            }
         }
 
         .custom-number-box:hover {
@@ -116,7 +123,8 @@
 
     <!-- Header -->
     <header class="mb-6 text-center">
-        <h1 class="text-3xl font-bold">Quiz Control Panel</h1>
+        <!-- Title scales up on larger screens -->
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold">Quiz Control Panel</h1>
     </header>
 
     <!-- Main Content -->
@@ -125,7 +133,8 @@
         <!-- Timer Mode -->
         <div id="timer-mode" class="mode-content hidden">
             <div class="flex flex-col items-center justify-center h-64 border-2 border-white rounded-xl bg-white">
-                <div id="stopwatch-display" class="text-6xl sm:text-8xl font-mono mb-6 text-black">00:00:00</div>
+                <!-- Timer display scales aggressively for large screens/smart boards -->
+                <div id="stopwatch-display" class="text-6xl sm:text-8xl lg:text-9xl font-mono mb-6 text-black">00:00:00</div>
                 <div class="flex gap-4">
                     <button onclick="startStopwatch()" id="start-btn" class="button-primary">Start</button>
                     <button onclick="stopStopwatch()" id="stop-btn" class="button-primary opacity-50" disabled>Stop</button>
@@ -157,8 +166,8 @@
 
     </main>
 
-    <!-- Nav Bar (Fixed at bottom) -->
-    <nav class="fixed bottom-0 left-0 w-full bg-black border-t border-white h-20 flex justify-around items-center z-50">
+    <!-- Nav Bar (Fixed at bottom) - Height adjusted for better touch targets -->
+    <nav class="fixed bottom-0 left-0 w-full bg-black border-t border-white h-20 sm:h-24 flex justify-around items-center z-50">
         <button id="nav-timer" onclick="setMode('timer')" class="nav-item active flex-1 h-full flex flex-col items-center justify-center text-gray-500">
             <span class="text-2xl">⏱️</span>
             <span class="text-xs">Timer</span>
@@ -208,7 +217,6 @@
             onAuthStateChanged(auth, (user) => {
                 if(user) {
                     userId = user.uid;
-                    // Removed: document.getElementById('user-id-display').innerText = "ID: " + userId.substring(0,6);
                     listenToData();
                 } else {
                     const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -268,7 +276,6 @@
             if(mode === 'selection' && gridSize === 0) {
                 showSizeSelector();
             } else if (mode === 'selection' && gridSize !== 0) {
-                // Ensure the grid is rendered/refreshed
                 renderGrid();
             }
         };
@@ -290,15 +297,14 @@
                 const btn = document.createElement('div');
                 btn.innerText = i;
                 
-                // Add the initial crossed state from Firestore data
                 const isCrossed = crossedNumbers[i];
                 btn.className = 'custom-number-box ' + (isCrossed ? 'crossed' : '');
                 
                 if(!isCrossed) {
                     btn.onclick = () => {
-                        // 1. Immediate Visual Update (Crucial fix for UX)
+                        // 1. Immediate Visual Update
                         btn.classList.add('crossed'); 
-                        btn.onclick = null; 
+                        btn.onclick = null; // Disable further clicks
                         
                         // 2. Data State Update
                         crossedNumbers[i] = true;
@@ -337,7 +343,7 @@
             hideModal();
             setMode('timer');
             
-            // Fix: Added a close button to the success modal
+            // Success modal with close button
             setTimeout(() => {
                 const footerHtml = `<button onclick="hideModal()" class="button-primary bg-white text-black">Close</button>`;
                 showModal("Success!", "Data cleared. Go to the **Selection** tab to choose a new grid size.", footerHtml);
